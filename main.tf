@@ -64,3 +64,55 @@ resource "azurerm_subnet_network_security_group_association" "mtsga" {
   subnet_id                 = azurerm_subnet.mtc-subet1.id
   network_security_group_id = azurerm_network_security_group.mtu-sg1.id
 }
+
+
+
+resource "azurerm_public_ip" "mtc-ip1" {
+  name                = "mtc-ip1"
+  resource_group_name = azurerm_resource_group.mtc-rg1.name
+  location            = azurerm_resource_group.mtc-rg1.location
+  allocation_method   = "Dynamic"
+
+  tags = {
+    environment = "dev"
+  }
+}
+
+resource "azurerm_network_interface" "mtc-nic1" {
+  name                = "mtc-nic"
+  location            = azurerm_resource_group.mtc-rg1.location
+  resource_group_name = azurerm_resource_group.mtc-rg1.name
+
+  ip_configuration {
+    name                          = "internal"
+    subnet_id                     = azurerm_subnet.mtc-subet1.id
+    private_ip_address_allocation = "Dynamic"
+  }
+
+
+}
+
+resource "azurerm_linux_virtual_machine" "mtc-vm1" {
+  name                  = "mtu-vm"
+  location              = azurerm_resource_group.mtc-rg1.location
+  resource_group_name   = azurerm_resource_group.mtc-rg1.name
+  size                  = "Standard_B1s"
+  admin_username        = "adminuser"
+  network_interface_ids = [azurerm_network_interface.mtc-nic1.id]
+
+  admin_ssh_key {
+    username   = "adminuser"
+    public_key = file("~/.ssh/azuretfkey.pub")
+  }
+  os_disk {
+    caching              = "ReadWrite"
+    storage_account_type = "Standard_LRS"
+  }
+
+  source_image_reference {
+    publisher = "Canonical"
+    offer     = "UbuntuServer"
+    sku       = "18.04-LTS"
+    version   = "latest"
+  }
+}
