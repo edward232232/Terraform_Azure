@@ -124,7 +124,7 @@ resource "azurerm_linux_virtual_machine" "mtc-vm1" {
       user         = "adminuser",
       identityfile = "~/.ssh/azuretfkey"
     })
-    interpreter = ["/bin/bash", "-c"]
+    interpreter = var.host_os == "windows" ? ["Powershell", "-Command"] : ["/bin/bash", "-c"]
   }
   tags = {
     environment = "dev"
