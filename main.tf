@@ -119,7 +119,7 @@ resource "azurerm_linux_virtual_machine" "mtc-vm1" {
     version   = "latest"
   }
   provisioner "local-exec" {
-    command = templatefile("linux-ssh.tpl", {
+    command = templatefile("${var.host_os}-ssh.tpl", {
       hostname     = self.public_ip_address,
       user         = "adminuser",
       identityfile = "~/.ssh/azuretfkey"
