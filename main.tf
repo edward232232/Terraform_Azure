@@ -87,6 +87,7 @@ resource "azurerm_network_interface" "mtc-nic1" {
     name                          = "internal"
     subnet_id                     = azurerm_subnet.mtc-subet1.id
     private_ip_address_allocation = "Dynamic"
+    public_ip_address_id          = azurerm_public_ip.mtc-ip1.id
   }
 
 
@@ -99,6 +100,8 @@ resource "azurerm_linux_virtual_machine" "mtc-vm1" {
   size                  = "Standard_B1s"
   admin_username        = "adminuser"
   network_interface_ids = [azurerm_network_interface.mtc-nic1.id]
+
+  custom_data = filebase64("customdata.tpl")
 
   admin_ssh_key {
     username   = "adminuser"
@@ -115,4 +118,25 @@ resource "azurerm_linux_virtual_machine" "mtc-vm1" {
     sku       = "18.04-LTS"
     version   = "latest"
   }
+  provisioner "local-exec" {
+    command = templatefile("linux-ssh.tpl", {
+      hostname     = self.public_ip_address,
+      user         = "adminuser",
+      identityfile = "~/.ssh/azuretfkey"
+    })
+    interpreter = ["/bin/bash", "-c"]
+  }
+  tags = {
+    environment = "dev"
+  }
+}
+
+data "azurerm_public_ip" "mtc-ip-data" {
+  name                = azurerm_public_ip.mtc-ip1.name
+  resource_group_name = azurerm_resource_group.mtc-rg1.name
+}
+
+
+output "public_ip_address" {
+  value = "${azurerm_linux_virtual_machine.mtc-vm1.name} ${data.azurerm_public_ip.mtc-ip-data.ip_address}"
 }
