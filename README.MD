@@ -1,4 +1,4 @@
-# Terraform Project
+# Terraform Scripts
 
 This project is a collection of Terraform scripts that I use for quick deployment of Azure Resources. This include creating a Linux virtual machine, associating it with a public IP address, and installing Docker on the virtual machine during its initialization. This means that the virtual machine is not only provisioned but also prepared with a Docker environment, ready to host Dockerized applications as soon as it's up and running.
 
